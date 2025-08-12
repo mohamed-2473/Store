@@ -1,0 +1,186 @@
+<div class="products-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1 class="hero-title">Discover Amazing Products</h1>
+        <p class="hero-subtitle">Find exactly what you're looking for in our carefully curated collection</p>
+
+        <div class="hero-search-container">
+          <div class="hero-search">
+            <input type="text" class="hero-search-input" placeholder="Search for products..." [(ngModel)]="searchQuery" (input)="applyFilters()">
+            <button class="hero-search-btn" (click)="applyFilters()">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+          <button class="hero-explore-btn" (click)="scrollToProducts()">
+            Explore Products <i class="fas fa-arrow-down"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container my-5">
+    <!-- Filters and Search -->
+    <div class="filters-section mb-5">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="filter-group">
+            <label class="filter-label">Category</label>
+            <select class="form-select filter-select" [(ngModel)]="selectedCategory" (change)="applyFilters()">
+              <option value="all">All Categories</option>
+              <option *ngFor="let category of categories" [value]="category">
+                {{ category | titlecase }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="filter-group">
+            <label class="filter-label">Search</label>
+            <div class="search-wrapper">
+              <input type="text" class="form-control search-input" placeholder="Search products..." [(ngModel)]="searchQuery" (input)="applyFilters()">
+              <i class="fas fa-search search-icon"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="filter-group">
+            <label class="filter-label">Sort By</label>
+            <select class="form-select filter-select" [(ngModel)]="sortOption" (change)="applyFilters()">
+              <option value="default">Default</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+              <option value="rating">Highest Rated</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            🔄 Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info mt-3">
+        <p class="text-muted mb-0">
+          Showing
+          {{ (currentPage - 1) * itemsPerPage + 1 }} -
+          {{ math.min(currentPage * itemsPerPage, filteredProducts.length) }}
+          of
+          {{ filteredProducts.length }} products
+        </p>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="isLoading" class="loading-section">
+      <div class="text-center">
+        <div class="spinner-border text-primary spinner-large" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Loading amazing products...</p>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div *ngIf="!isLoading && filteredProducts.length > 0" class="products-grid">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <div class="col" *ngFor="let product of paginatedProducts">
+          <div class="product-card" (click)="navigateToProduct(product.id)">
+            <div class="product-image-container">
+              <img [src]="product.image" class="product-image" [alt]="product.title">
+              <div class="product-badge">
+                <span class="badge bg-success">
+                  ⭐
+                  {{ product.rating.rate | number:'1.1-1' }}
+                </span>
+              </div>
+            </div>
+            <div class="product-info">
+              <div class="product-category">
+                {{ product.category | titlecase }}
+              </div>
+              <h5 class="product-title">
+                {{ product.title | truncate:50 }}
+              </h5>
+              <div class="product-rating">
+                <span class="stars">
+                  <i *ngFor="let star of getStarArray(product.rating.rate)" [class]="star ? 'fas fa-star text-warning' : 'far fa-star text-muted'"></i>
+                </span>
+                <small class="text-muted ms-2">(
+                  {{ product.rating.count }})</small>
+              </div>
+              <div class="product-price">
+                <span class="price">$
+                  {{ product.price | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div *ngIf="!isLoading && filteredProducts.length === 0" class="no-results">
+      <div class="text-center py-5">
+        <div class="no-results-icon">
+          <span style="font-size: 4rem;">🔍</span>
+        </div>
+        <h3 class="mt-4 mb-3">No products found</h3>
+        <p class="text-muted mb-4">We couldn't find any products matching your criteria.</p>
+        <button class="btn btn-primary btn-lg" (click)="resetFilters()">
+          🔄 Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav *ngIf="!isLoading && filteredProducts.length > 0 && totalPages > 1" class="pagination-section mt-5">
+      <ul class="pagination pagination-lg justify-content-center">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="changePage(currentPage - 1)" [attr.aria-disabled]="currentPage === 1">
+            ‹
+          </a>
+        </li>
+
+        <!-- Show first page -->
+        <li class="page-item" [class.active]="currentPage === 1" *ngIf="totalPages > 1">
+          <a class="page-link" (click)="changePage(1)">1</a>
+        </li>
+
+        <!-- Show ellipsis if needed -->
+        <li class="page-item disabled" *ngIf="currentPage > 3">
+          <span class="page-link">...</span>
+        </li>
+
+        <!-- Show current page and neighbors -->
+        <li class="page-item" [class.active]="currentPage === page" *ngFor="let page of pageNumbers.slice(math.max(0, currentPage - 2), math.min(totalPages, currentPage + 1))" [hidden]="page === 1 || page === totalPages">
+          <a class="page-link" (click)="changePage(page)">
+            {{ page }}</a>
+        </li>
+
+        <!-- Show ellipsis if needed -->
+        <li class="page-item disabled" *ngIf="currentPage < totalPages - 2">
+          <span class="page-link">...</span>
+        </li>
+
+        <!-- Show last page -->
+        <li class="page-item" [class.active]="currentPage === totalPages" *ngIf="totalPages > 1">
+          <a class="page-link" (click)="changePage(totalPages)">
+            {{ totalPages }}</a>
+        </li>
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="changePage(currentPage + 1)" [attr.aria-disabled]="currentPage === totalPages">
+            ›
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

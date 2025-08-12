@@ -1,0 +1,41 @@
+<footer>
+  <div class="container footer-container">
+    <div class="row">
+      <div class="col-md-4 footer-section">
+        <h5 class="footer-title">About Us</h5>
+        <p class="text-white-80">Your trusted online store for quality products at affordable prices. We're committed to providing exceptional customer service and premium products.</p>
+        <div class="social-links">
+          <a *ngFor="let link of socialLinks" [href]="link.url" target="_blank" rel="noopener">
+            <i [class]="'bi ' + link.icon"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="col-md-4 footer-section">
+        <h5 class="footer-title">Quick Links</h5>
+        <ul class="footer-links">
+          <li><a routerLink="/">Home</a></li>
+          <li><a routerLink="/products">Products</a></li>
+          <li><a routerLink="/about">About Us</a></li>
+          <li><a routerLink="/contact">Contact</a></li>
+          <li><a routerLink="/faq">FAQ</a></li>
+          <li><a routerLink="/privacy">Privacy Policy</a></li>
+        </ul>
+      </div>
+      
+      <div class="col-md-4 footer-section">
+        <h5 class="footer-title">Contact Info</h5>
+        <address class="contact-info">
+          <p><i class="bi bi-geo-alt"></i> 123 Store Street, City, State 10001</p>
+          <p><i class="bi bi-telephone"></i> (123) 456-7890</p>
+          <p><i class="bi bi-envelope"></i> {{ email }}</p>
+          <p><i class="bi bi-clock"></i> Mon-Fri: 9AM-6PM</p>
+        </address>
+      </div>
+    </div>
+    
+    <div class="copyright">
+      &copy; {{ currentYear }} UrbanStyle. All rights reserved.
+    </div>
+  </div>
+</footer>
